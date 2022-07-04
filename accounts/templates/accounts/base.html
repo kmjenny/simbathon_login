@@ -1,9 +1,5 @@
-<ul class="nav navbar-nav navbar-right">
-    {% if user.is_active %}
-    <li><a href="{% url 'login' %}"> <span class="glyphicon glyphicon-heart"></span> {{user.username}}</a></li>
-    <li><a href="{% url 'logout' %}">로그아웃</a></li>
-    {% else %}
-    <li><a href="{% url 'login' %}"> <span class="glyphicon glyphicon-user"></span>로그인</a></li>
-    <li><a href="{% url 'signup' %}">회원가입</a></li>
-    {% endif %}
-</ul>
+<div>
+    <h3><a href="{% url 'accounts:signup' %}">회원가입</a></h3>
+    <h3><a href="{% url 'accounts:login' %}">로그인</a></h3>
+    <h3><a href="{% url 'accounts:logout' %}">로그아웃</a></h3>
+</div>
