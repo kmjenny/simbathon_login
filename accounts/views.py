@@ -11,7 +11,7 @@ from .forms import CreateUserForm
 # Create your views here.
 # 홈화면
 def showmain(request):
-    return render(request, 'base.html')
+    return render(request, 'accounts/base.html')
 
 # 회원가입
 def signup(request):
@@ -55,4 +55,4 @@ def login(request):
 # 로그아웃
 def logout(request):
     auth.logout(request)
-    return redirect('accounts/logged_out.html')
+    return render(request, 'accounts/logged_out.html')
