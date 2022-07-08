@@ -1,5 +1,8 @@
 <div>
+    {% if login_session %}
+    <h3><a href="{% url 'accounts:logout' %}">로그아웃</a></h3>
+    {% else %}
     <h3><a href="{% url 'accounts:signup' %}">회원가입</a></h3>
     <h3><a href="{% url 'accounts:login' %}">로그인</a></h3>
-    <h3><a href="{% url 'accounts:logout' %}">로그아웃</a></h3>
+    {% endif %}
 </div>

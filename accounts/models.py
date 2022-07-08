@@ -7,3 +7,11 @@ class User(models.Model):
     password1 = models.CharField(max_length=128, verbose_name='비밀번호')
     nickname = models.CharField(max_length=16, unique=True, verbose_name='닉네임')
     email = models.EmailField(max_length=128, unique=True, verbose_name='이메일')
+
+    def __str__(self):
+        return self.nickname
+
+    class Meta:
+        db_table = 'user'
+        verbose_name= '유저'
+        verbose_name_plural = '유저'

@@ -2,6 +2,8 @@ from .models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from pkg_resources import require
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 class CreateUserForm(forms.ModelForm):
     username = forms.CharField(
@@ -98,5 +100,60 @@ class CreateUserForm(forms.ModelForm):
             self.username = username
             self.nickname = nickname
             self.email = email
-            self.password1 = password1
+            self.password1 = PasswordHasher().hash(password1)
             self.password2 = password2
+
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        max_length=32,
+        label='아이디',
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class' : 'username',
+                'placeholder' : '아이디'
+            }
+        ),
+        error_messages={'required' : '아이디를 입력해주세요.'}
+    )
+
+    password1 = forms.CharField(
+        max_length=128,
+        label='비밀번호',
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                'class' : 'password1',
+                'placeholder' : '비밀번호'
+            }
+        ),
+        error_messages={'required' : '비밀번호를 입력해주세요.'}
+    )
+
+    field_order = [
+        'username',
+        'password1'
+    ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        username = cleaned_data.get('username', '')
+        password1 = cleaned_data.get('password1', '')
+
+        if username == '':
+            return self.add_error('username', '아이디를 다시 입력해 주세요.')
+        elif password1 == '':
+            return self.add_error('password1', '비밀번호를 다시 입력해 주세요.')
+        else:
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return self.add_error('username', '아이디가 존재하지 않습니다.')
+
+            try:
+                PasswordHasher().verify(user.password1, password1)
+            except VerifyMismatchError:
+                return self.add_error('password1', '비밀번호가 다릅니다.')
+
+            self.login_session = user.username

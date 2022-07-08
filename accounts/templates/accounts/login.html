@@ -1,17 +1,17 @@
-<div class="wrapper">
-    <div style="text-align: center;">
-        <h1>로그인</h1>
-        <form method="POST" action="{% url 'accounts:login' %}">
-            {% csrf_token %}
-            아이디:
-            <br>
-            <input name="username" type="text">
-            <br>
-            비밀번호:
-            <br>
-            <input name="password" type="password">
-            <br><br>
-            <input type="submit" class="btn btn-primary" value="Login">
-        </form>
+<div>로그인 페이지</div>
+
+<form action="" method="POST">
+    {% csrf_token %}
+
+    {% for form in forms %}
+    <div>
+        <label for="{{ form.id_for_label }}">{{ form.label }}</label>
+        {{ form }}
     </div>
-</div>
+    {% endfor %}
+
+    {% if error %}
+    {{ error }}
+    {% endif %}
+    <button type="submit" name="login-submit" value="login">로그인하기</button>
+</form>

@@ -3,14 +3,23 @@ from django.contrib import auth
 from django.contrib.auth import authenticate
 from .models import User
 # from django.contrib.auth.forms import UserCreationForm
-from .forms import CreateUserForm
+from .forms import CreateUserForm, LoginForm
 # from django.views.generic.edit import CreateView
 # from django.urls import reverse_lazy
 # from django.views.generic import TemplateView
 # Create your views here.
 # 홈화면
 def showmain(request):
-    return render(request, 'accounts/base.html')
+    context = {}
+
+    login_session = request.session.get('login_session', '')
+
+    if login_session == '':
+        context['login_session'] = False
+    else:
+        context['login_session'] = True
+
+    return render(request, 'accounts/base.html', context)
 
 # 회원가입
 def signup(request):
@@ -46,19 +55,25 @@ def signup(request):
 
 # 로그인
 def login(request):
+    loginform = LoginForm()
+    context = { 'forms': loginform }
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        user = authenticate(request, username=username, password=password)
-        if user is not None:
-            auth.login(request, user)
-            return redirect('showmain')
+        loginform = LoginForm(request.POST)
+        
+        if loginform.is_valid():
+            request.session['login_session'] = loginform.login_session
+            request.session.set_expiry(0)
+            return redirect('/')
         else:
-            return render(request, 'accounts/login.html', {'error': 'username or password is incorrect.'})
+            context['forms']=loginform
+            if loginform.errors:
+                for value in loginform.errors.values():
+                    context['error'] = value
+        return render(request, 'accounts/login.html', context)
     else:
-        return render(request, 'accounts/login.html')
+        return render(request, 'accounts/login.html', context)
 
 # 로그아웃
 def logout(request):
-    auth.logout(request)
+    request.session.flush()
     return render(request, 'accounts/logged_out.html')
