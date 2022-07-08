@@ -2,7 +2,17 @@
 	<h1>회원가입</h1> 
 	<form method="POST"> 
 		{% csrf_token %} 
-		{{ form }}
+		{% for form in forms %}
+		<div>
+			<label for="{{ form.id_for_label }}">{{ form.label }}</label>
+			{{ form }}
+		</div>
+		{% endfor %}
+
+		{% if error %}
+		{{ error }}
+		{% endif %}
 	<input type="submit" class="btn btn-primary" value="Sign Up"> 
 	</form> 
-</div> 
+</div>
+<!--에러 메세지 class는 errorlist -->

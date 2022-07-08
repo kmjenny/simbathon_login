@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from .models import User
 # from django.contrib.auth.forms import UserCreationForm
 from .forms import CreateUserForm
 # from django.views.generic.edit import CreateView
 # from django.urls import reverse_lazy
 # from django.views.generic import TemplateView
-
 # Create your views here.
 # 홈화면
 def showmain(request):
@@ -15,20 +14,27 @@ def showmain(request):
 
 # 회원가입
 def signup(request):
+    signup_form = CreateUserForm()
+    context = {'forms':signup_form}
     if request.method == 'POST':
-        if request.POST['password1'] == request.POST['password2']:
-            user = User.objects.create_user(
-                username = request.POST['username'],
-
-                password = request.POST['password1'],
-                email = request.POST['email'],
+        signup_form = CreateUserForm(request.POST)
+        if signup_form.is_valid():
+            user = User(
+                username = signup_form.username,
+                nickname = signup_form.nickname,
+                email = signup_form.email,
+                password1 = signup_form.password1
             )
-            auth.login(request, user)
+            user.save()
             return render(request, 'accounts/signup_done.html')
-        return render(request, 'accounts/signup.html')
+        else:
+            context['forms'] = signup_form
+            if signup_form.errors:
+                for value in signup_form.errors.values():
+                    context['error']=value
+        return render(request, 'accounts/signup.html', context)
     else:
-        form = CreateUserForm
-        return render(request, 'accounts/signup.html', {'form':form})
+        return render(request, 'accounts/signup.html', context)
 
 # class CreateUserView(CreateView):
 #     template_name = 'accounts/signup.html'

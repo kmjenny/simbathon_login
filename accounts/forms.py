@@ -1,22 +1,102 @@
-from socket import fromshare
-from django.contrib.auth.models import User
+from .models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from pkg_resources import require
 
-from .validators import validate_symbols
+class CreateUserForm(forms.ModelForm):
+    username = forms.CharField(
+        label='아이디',
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class' : 'username',
+                'placeholder' : '아이디'
+            }
+        ),
+        error_messages={'required' : '아이디를 입력해주세요'}
+    )
+    password1 = forms.CharField(
+        label='비밀번호',
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                'class' : 'password1',
+                'placeholder' : '비밀번호'
+            }
+        ),
+        error_messages={'required' : '비밀번호를 입력해주세요.'}
+    )
+    password2 = forms.CharField(
+        label='비밀번호 확인',
+        required=True,
+        widget=forms.PasswordInput(
+            attrs={
+                'class' : 'password2',
+                'placeholder' : '비밀번호 확인'
+            }
+        ),
+        error_messages={'required' : '비밀번호가 일치하지 않습니다.'}
+    )
+    email = forms.EmailField(
+        label='이메일',
+        required=True,
+        widget=forms.EmailInput(
+            attrs={
+                'class' : 'email',
+                'placeholder' : '이메일'
+            }
+        ),
+        error_messages={'required' : '이메일을 입력해주세요.'}
+    )
+    nickname = forms.CharField(
+        label='닉네임',
+        required=True,
+        widget=forms.TextInput(
+            attrs={
+                'class' : 'nickname',
+                'placeholder' : '닉네임'
+            }
+        ),
+        error_messages={'required' : '닉네임을 입력해주세요.'}
+    )
 
-class CreateUserForm(UserCreationForm):
-    email = forms.EmailField(required=True, validators=[validate_symbols])
-    nickname = forms.CharField(required=True)
+    field_order = [
+        'username',
+        'nickname',
+        'email',
+        'password1',
+        'password2'
+    ]
 
     class Meta:
         model=User
-        fields = ("username", "nickname", "email", "password1", "password2")
+        fields = [
+            'username',
+            'nickname',
+            'email',
+            'password1'
+        ]
 
-    def save(self, commit=True):
-        user = super(CreateUserForm,self).save(commit=False)
-        user.email = self.cleaned_data["email"]
-        user.nickname = self.cleaned_data["nickname"]
-        if commit:
-            user.save()
-        return user
+    def clean(self):
+        cleaned_data = super().clean()
+
+        username = cleaned_data.get('username', '')
+        nickname = cleaned_data.get('nickname', '')
+        email = cleaned_data.get('email', '')
+        password1 = cleaned_data.get('password1', '')
+        password2 = cleaned_data.get('password2', '')
+
+        if password1 != password2 :
+            return self.add_error('password2', '비밀번호가 다릅니다.')
+        elif not (4<=len(username)<=16):
+            return self.add_error('username', '아이디는 4~16자로 입력해 주세요.')
+        elif 8 > len(password1):
+            return self.add_error('password1', '비밀번호는 8자 이상으로 적어주세요.')
+        elif not ((email.endswith('@dongguk.edu')) or (email.endswith('@dgu.edu')) or (email.endswith('@dgu.ac.kr'))):
+            return self.add_error('email', '동국대학교 이메일로만 가입이 가능합니다.')
+        else:
+            self.username = username
+            self.nickname = nickname
+            self.email = email
+            self.password1 = password1
+            self.password2 = password2
